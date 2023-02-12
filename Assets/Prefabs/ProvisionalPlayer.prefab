@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 296444928178247273}
   - component: {fileID: 9049250453862903957}
-  - component: {fileID: 3423468354452010323}
+  - component: {fileID: 6820332004587636768}
   - component: {fileID: 2886341192794049353}
+  - component: {fileID: 3423468354452010323}
   - component: {fileID: 6515829413256992853}
   m_Layer: 0
   m_Name: ProvisionalPlayer
@@ -87,6 +88,40 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &6820332004587636768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3420412382369184474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 013a9d7a43d581f4e88eb6913f21bc51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parent: {fileID: 0}
+  health: 6
+--- !u!114 &2886341192794049353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3420412382369184474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e24105476d3d44ca28f5d7c21ae494, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerSpeed: 0.1
+  maxHeight: 4
+  jumpAcceleration: 0.27
+  jumpVariation: 0
+  jumpArc: 0
+  tracingHeight: 0.95
+  tracingWidth: 0
+  maxFallSpeed: 0
 --- !u!50 &3423468354452010323
 Rigidbody2D:
   serializedVersion: 4
@@ -108,22 +143,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &2886341192794049353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3420412382369184474}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5e24105476d3d44ca28f5d7c21ae494, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerSpeed: 0.1
-  maxHeight: 4
-  jumpAcceleration: 0.27
-  tracingHeight: 0.95
 --- !u!61 &6515829413256992853
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -4,24 +4,29 @@ using UnityEngine;
 
 public class HealthBar : MonoBehaviour
 {
-    [SerializeField] GameObject emptyHearts, halfLHearts, halfRHearts, emptyHeartPrefab, halfHeartLPrefab, halfHeartRPrefab;
+    #region PrivateVariables
+
+    [SerializeField] GameObject player, emptyHearts, halfLHearts, halfRHearts, emptyHeartPrefab, halfHeartLPrefab, halfHeartRPrefab;
     [Space]
     [SerializeField] List<GameObject> heartFilledSpritesList;
     [SerializeField] List<GameObject> heartEmptySpritesList;
 
-    [SerializeField] uint totalNumberOfHearts = 3; // Every heart allows for 2 health points
-    [SerializeField] uint currentHealth;
+    uint totalNumberOfHearts;
+    uint currentHealth;
+
+    #endregion
+
+    #region BuiltInMethods
 
     private void Start()
     {
-        currentHealth = totalNumberOfHearts * 2;
-
-        CreateEmptyHearts();
-        FillHeartsUI();
+        player = FindObjectOfType<Player>().gameObject;
     }
 
-    private void Update()
+    void Update()
     {
+        GetCurrentHealth();
+
         if (heartFilledSpritesList.Count != currentHealth || heartEmptySpritesList.Count != totalNumberOfHearts)
         {
             ClearHealthBarSprites();
@@ -29,6 +34,27 @@ public class HealthBar : MonoBehaviour
             FillHeartsUI();
         }
     }
+
+    #endregion
+
+    #region PublicMethods
+
+    public void GetCurrentHealth()
+    {
+        if (player == null)
+        {
+            currentHealth = 0;
+            return;
+        }
+
+        var _playerHealth = player.GetComponent<Health>();
+        currentHealth = _playerHealth.HealthValue;
+        totalNumberOfHearts = _playerHealth.MaxHealthValue / 2;
+    }
+
+    #endregion
+
+    #region PrivateMethods
 
     void ClearHealthBarSprites()
     {
@@ -56,9 +82,6 @@ public class HealthBar : MonoBehaviour
 
     void FillHeartsUI()
     {
-        if (currentHealth > totalNumberOfHearts * 2) // Quick check to avoid health bar overflow
-            currentHealth = totalNumberOfHearts * 2;
-
         for (int i = 1; i <= currentHealth; i++)
         {
             GameObject thisHalfHeart;
@@ -75,4 +98,7 @@ public class HealthBar : MonoBehaviour
             heartFilledSpritesList.Add(thisHalfHeart);
         }
     }
+    
+    #endregion
+
 }
