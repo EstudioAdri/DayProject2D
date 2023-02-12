@@ -121,8 +121,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSpeed: 0.1
-  maxHeight: 2
-  jumpAcceleration: 0.1
+  maxHeight: 4
+  jumpAcceleration: 0.27
   tracingHeight: 0.95
 --- !u!61 &6515829413256992853
 BoxCollider2D:
