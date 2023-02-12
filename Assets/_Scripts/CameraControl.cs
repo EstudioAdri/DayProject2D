@@ -19,6 +19,10 @@ public class CameraControl : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (player == null)
+        {
+            return;
+        }
         Vector3 relativePosition = transform.InverseTransformDirection(player.transform.position - transform.position);
         Vector3 cameraPosition = transform.position;        
 
