@@ -22845,7 +22845,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1263198513}
-  smooth: 0.1
+  smooth: 0.2
 --- !u!1001 &2145653398
 PrefabInstance:
   m_ObjectHideFlags: 0
