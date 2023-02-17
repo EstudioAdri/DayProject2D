@@ -1,8 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UIElements.Experimental;
 
 public class CameraControl : MonoBehaviour
+
 {
     [SerializeField] float cameraBoundaryX;
     [SerializeField] float cameraBoundaryY;
@@ -13,6 +16,7 @@ public class CameraControl : MonoBehaviour
     private void Awake()
     {
         player = FindObjectOfType<Player>();
+
     }
 
     void FixedUpdate()
@@ -42,6 +46,7 @@ public class CameraControl : MonoBehaviour
         }
 
         cameraPosition = Vector3.Lerp(transform.position, cameraPosition, cameraSpeed);
+
         transform.position = cameraPosition;
     }
 

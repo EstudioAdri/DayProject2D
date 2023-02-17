@@ -14,8 +14,10 @@ public class Player : MonoBehaviour
     [SerializeField] float jumpArc;
     [SerializeField] float tracingHeight = 1.1f;
     [SerializeField] float tracingWidth;
+
     [SerializeField] float maxAirSpeed;
     [SerializeField] float bufferTime;
+
 
     public float PlayerSpeed { get { return playerSpeed; } }
     float originPositionJump;
@@ -25,8 +27,10 @@ public class Player : MonoBehaviour
     bool moveLock;
     bool wallRight;
     bool wallLeft;
+
     public bool WallRight { get { return wallRight; } }
     public bool WallLeft { get { return wallLeft; } }
+
     public bool IsGrounded { get { return grounded; } }
     bool jumpBuffer;
     LayerMask ground;
@@ -36,6 +40,7 @@ public class Player : MonoBehaviour
     playerState state;
     Vector3 nextPositionAir;
     Vector2 jumpDirection;
+
     public enum direction
     {
         none,
@@ -80,7 +85,8 @@ public class Player : MonoBehaviour
             goingUp = true;
             grounded = false;
             jumpBuffer = false;
-            //moveLock = true;            
+
+            //moveLock = true; 
         }
 
         switch (state)
@@ -122,19 +128,22 @@ public class Player : MonoBehaviour
     void PlayerPhysics()
     {
         Vector2 hitPoint = new Vector2();
+
         Vector2 originDown = (Vector2)transform.position + Vector2.down * transform.lossyScale.y / 2;
+
         if (transform.position.y >= originPositionJump + maxHeight)
         {
             goingUp = false;
+        }  
+
+        if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
+        {
+            nextPositionAir.y = 1 / ((transform.position.y - originPositionJump) * jumpVariation);
         }
 
-        if (transform.position.y >= originPositionJump)
+        if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
         {
-            nextPositionAir.y = 1 / (1 + (transform.position.y - originPositionJump));
-        }
-        else
-        {
-            nextPositionAir.y = 1;
+            nextPositionAir.y = 1 / ((transform.position.y - originPositionJump) * jumpVariation);
         }
         
 
@@ -148,7 +157,6 @@ public class Player : MonoBehaviour
         {
             nextPositionAir *= -1;
         }
-
         hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
 
         hitPoint = hit.point;
@@ -257,6 +265,7 @@ public class Player : MonoBehaviour
         else
         {
             grounded = false;
+
         }
 
         if (Physics2D.BoxCast(originUp, transform.lossyScale, 0, Vector2.up, tracingHeight, ground))
@@ -276,6 +285,7 @@ public class Player : MonoBehaviour
         if (Physics2D.BoxCast(transform.position, transform.lossyScale, 0, Vector2.left, tracingWidth, ground))
         {
             wallLeft = true;
+
         }
         else
         {
@@ -287,20 +297,4 @@ public class Player : MonoBehaviour
     {
         jumpBuffer = false;
     }
-    //private void OnTriggerEnter2D(Collider2D collision)
-    //{
-    //    if (collision.gameObject.layer == 3)
-    //    {
-    //        grounded = true;
-    //    }
-    //    print("enter");
-    //}
-    //private void OnTriggerExit2D(Collider2D collision)
-    //{
-    //    if (collision.gameObject.layer == 3)
-    //    {
-    //        grounded = false;
-    //    }
-    //    print("exit");
-    //}
-}
+ }
