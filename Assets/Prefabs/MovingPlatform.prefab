@@ -154,7 +154,7 @@ GameObject:
   - component: {fileID: 400816953990796221}
   m_Layer: 0
   m_Name: A
-  m_TagString: Untagged
+  m_TagString: platformPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -793,7 +793,7 @@ GameObject:
   - component: {fileID: 400816954318162359}
   m_Layer: 0
   m_Name: B
-  m_TagString: Untagged
+  m_TagString: platformPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
