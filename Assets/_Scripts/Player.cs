@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     [SerializeField] float tracingHeight = 1.1f;
     [SerializeField] float tracingWidth;
     [SerializeField] float maxFallSpeed;
+    [Space]
+    [SerializeField] List<GameObject> nearestInteractable;
 
     public float PlayerSpeed { get { return playerSpeed; } }
     float originPositionJump;
@@ -31,19 +33,6 @@ public class Player : MonoBehaviour
     playerState state;
     Vector3 nextPositionAir;
     Vector2 jumpDirection;
-    enum direction
-    {
-        none,
-        left,
-        right
-    }
-
-    enum playerState
-    {
-        Idle,
-        Moving,
-        Jumping
-    }
 
     void Awake()
     {
@@ -264,4 +253,56 @@ public class Player : MonoBehaviour
             wallLeft = false;
         }
     }
+
+    void Interact()
+    {
+        foreach (var item in nearestInteractable)
+        {
+
+        }
+    }
+
+    #region Colliders & Triggers
+
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (!collider.gameObject.GetComponent<Chest>().HasBeenInteracted)
+        {
+            Chest _chest = collider.gameObject.GetComponent<Chest>();
+            
+            if (!_chest.HasBeenInteracted)
+                nearestInteractable.Add(_chest.gameObject);
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D collider)
+    {
+        if (collider.gameObject.GetComponent<Chest>())
+        {
+            Chest _chest = collider.gameObject.GetComponent<Chest>();
+
+            if (!_chest.HasBeenInteracted)
+                nearestInteractable.Remove(_chest.gameObject);
+        }
+    }
+
+    #endregion
+
+    #region Enums
+
+    enum direction
+    {
+        none,
+        left,
+        right
+    }
+
+    enum playerState
+    {
+        Idle,
+        Moving,
+        Jumping
+    }
+
+    #endregion
 }

@@ -21,12 +21,18 @@ public class DamageOnTouch : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!collision.GetComponent<Health>())
+            return;
+
         stopRoutine = false;
         StartCoroutine(DamageRoutine(collision.gameObject));
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (!collision.GetComponent<Health>())
+            return;
+
         stopRoutine = true;
     }
 }
