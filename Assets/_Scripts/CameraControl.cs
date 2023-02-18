@@ -5,47 +5,45 @@ using UnityEngine.AI;
 using UnityEngine.UIElements.Experimental;
 
 public class CameraControl : MonoBehaviour
-{    
-    [SerializeField] float smooth = 1f;
-    [SerializeField] float smoothingBoundaryX;
-    [SerializeField] float smoothingBoundaryY;
+{
+    [SerializeField] float cameraBoundaryX;
+    [SerializeField] float cameraBoundaryY;
+    float cameraSpeed = .1f;
     Player player;
-    bool boundaries;
 
-    private void Start()
+
+    private void Awake()
     {
-        player = FindObjectOfType<Player>();        
+        player = FindObjectOfType<Player>();
     }
 
     void FixedUpdate()
     {
-        if (player == null)
+        cameraSpeed = player.PlayerSpeed;
+        Vector3 relativePosition = transform.InverseTransformPoint(player.transform.position);
+        Vector3 cameraPosition = transform.position;
+        if (relativePosition.x > cameraBoundaryX)
         {
-            return;
+            cameraPosition += Vector3.right;
         }
-        Vector3 relativePosition = transform.InverseTransformDirection(player.transform.position - transform.position);
-        Vector3 cameraPosition = transform.position;        
+        else if (relativePosition.x < -cameraBoundaryX)
+        {
+            cameraPosition -= Vector3.right;
+        }
 
-        if (relativePosition.x > smoothingBoundaryX)
-        {
-            cameraPosition += Vector3.right * player.PlayerSpeed;            
-        }
-        else if (relativePosition.x < -smoothingBoundaryX)
-        {
-            cameraPosition += Vector3.left * player.PlayerSpeed;
-        }
         if (player.IsGrounded)
         {
-            if (player.transform.position.y > cameraPosition.y + smoothingBoundaryY)
+            if (relativePosition.y > cameraBoundaryY)
             {
-                cameraPosition += Vector3.up * player.PlayerSpeed;
+                cameraPosition += Vector3.up;
             }
-            else if (player.transform.position.y < cameraPosition.y - smoothingBoundaryY)
+            else if (relativePosition.y < -cameraBoundaryY)
             {
-                cameraPosition += Vector3.down * player.PlayerSpeed;
+                cameraPosition -= Vector3.up;
             }
         }
-        cameraPosition = Vector3.Lerp(transform.position, cameraPosition, smooth);
+
+        cameraPosition = Vector3.Lerp(transform.position, cameraPosition, cameraSpeed);
         transform.position = cameraPosition;
     }
 }
