@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 
 public class Player : MonoBehaviour
 {
@@ -13,9 +9,8 @@ public class Player : MonoBehaviour
     [SerializeField] float jumpArc;
     [SerializeField] float tracingHeight = 1.1f;
     [SerializeField] float tracingWidth;
-    [SerializeField] float maxFallSpeed;
-    [Space]
-    [SerializeField] List<GameObject> nearestInteractable;
+    [SerializeField] float maxAirSpeed;
+    [SerializeField] float bufferTime;
 
     public float PlayerSpeed { get { return playerSpeed; } }
     float originPositionJump;
@@ -25,26 +20,42 @@ public class Player : MonoBehaviour
     bool moveLock;
     bool wallRight;
     bool wallLeft;
+    public bool WallRight { get { return wallRight; } }
+    public bool WallLeft { get { return wallLeft; } }
     public bool IsGrounded { get { return grounded; } }
     bool jumpBuffer;
     LayerMask ground;
     RaycastHit2D hit;
+    public direction PlayerDirection { get { return playerDirection; } }
     direction playerDirection;
     playerState state;
     Vector3 nextPositionAir;
     Vector2 jumpDirection;
+    public enum direction
+    {
+        none,
+        left,
+        right
+    }
+
+    public enum playerState
+    {
+        Idle,
+        Moving,
+        Jumping
+    }
 
     void Awake()
     {
         goingUp = false;
         nextPositionAir = Vector3.zero;
         ground = LayerMask.GetMask("Ground");
+        originPositionJump = transform.position.y;
     }
 
 
     void Update()
     {
-        
         Raycasts();
         CheckInputs();
     }
@@ -64,7 +75,7 @@ public class Player : MonoBehaviour
             goingUp = true;
             grounded = false;
             jumpBuffer = false;
-            moveLock = true;            
+            //moveLock = true;            
         }
 
         switch (state)
@@ -94,7 +105,6 @@ public class Player : MonoBehaviour
                 if (!grounded)
                 {
                     state = playerState.Jumping;
-
                 }
                 if (!moving)
                 {
@@ -107,45 +117,51 @@ public class Player : MonoBehaviour
     void PlayerPhysics()
     {
         Vector2 hitPoint = new Vector2();
-        nextPositionAir.y = 1;
+        Vector2 originDown = (Vector2)transform.position + Vector2.down * transform.lossyScale.y / 2;
         if (transform.position.y >= originPositionJump + maxHeight)
         {
             goingUp = false;
-        }  
+        }
+
+        if (transform.position.y >= originPositionJump)
+        {
+            nextPositionAir.y = 1 / (1 + (transform.position.y - originPositionJump));
+        }
+        else
+        {
+            nextPositionAir.y = 1;
+        }
+
 
         if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
         {
             nextPositionAir.y = 1 / ((transform.position.y - originPositionJump) * jumpVariation);
         }
 
-        if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
-        {
-            nextPositionAir.y = 1 / ((transform.position.y - originPositionJump) * jumpVariation);
-        }
 
         if (!goingUp)
         {
             nextPositionAir *= -1;
         }
 
-        hit = Physics2D.Raycast(transform.position, Vector2.down, 100f, ground);
-        
+        hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
+
         hitPoint = hit.point;
 
         nextPositionAir *= jumpAcceleration;
-        if (nextPositionAir.y > maxFallSpeed)
+        if (nextPositionAir.y > maxAirSpeed)
         {
-            nextPositionAir.y = maxFallSpeed;
+            nextPositionAir.y = maxAirSpeed;
         }
-        else if(nextPositionAir.y < -maxFallSpeed)
+        else if (nextPositionAir.y < -maxAirSpeed)
         {
-            nextPositionAir.y = -maxFallSpeed ;
+            nextPositionAir.y = -maxAirSpeed;
         }
 
         if (transform.position.y + nextPositionAir.y < hitPoint.y + 0.95f && !goingUp)
-        {            
+        {
             transform.position = new Vector3(transform.position.x, hitPoint.y + 0.95f);
-        }        
+        }
         else
         {
             transform.position += nextPositionAir;
@@ -178,6 +194,7 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             jumpBuffer = true;
+            Invoke("JumpBuffer", bufferTime);
         }
         //Checks if player moves left or right
         if (!moveLock)
@@ -205,20 +222,28 @@ public class Player : MonoBehaviour
         //Checks player state
         if (Input.GetKey(KeyCode.E))
         {
-            //print("State: " + state);
-            //print("Moving: " + moving);
-            //print("Grounded: " + grounded);
-            //print("buffer: " + jumpBuffer);
-            //print("goingUP: " + goingUp);
-            print("sppeed: " + PlayerSpeed);
+            print("State: " + state);
+            print("Grounded: " + grounded);
+            //print("Moving: " + moving);    
             //print("hitDistance:" + hit.distance);
+        }
+        //Reset Scene
+        if (Input.GetKey(KeyCode.R))
+        {
+            Application.LoadLevel(Application.loadedLevel);
         }
     }
 
     void Raycasts()
     {
+        Vector2 originUp = (Vector2)transform.position + Vector2.up * transform.lossyScale.y / 2;
+        Vector2 originDown = (Vector2)transform.position + Vector2.down * transform.lossyScale.y / 2;
+        Vector2 originRight = (Vector2)transform.position + Vector2.right * transform.lossyScale.x / 2;
+        Vector2 originLeft = (Vector2)transform.position + Vector2.left * transform.lossyScale.x / 2;
         //This floor bool checks if the player is jumping, so it doesn't stop jumping when he goes under a platform
-        bool floor = Physics2D.Raycast(transform.position, Vector2.down, tracingHeight, ground);
+
+        bool floor = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
+        //bool floor = Physics2D.Raycast(transform.position, Vector2.down, tracingHeight, ground);
         if (floor && !goingUp)
         {
             grounded = true;
@@ -228,15 +253,14 @@ public class Player : MonoBehaviour
         {
             grounded = false;
         }
-        if (Physics2D.Raycast(transform.position, Vector2.up, tracingHeight, ground))
+
+        if (Physics2D.BoxCast(originUp, transform.lossyScale, 0, Vector2.up, tracingHeight, ground))
         {
             goingUp = false;
         }
 
         //BoxCast for wall collision
-        Vector2 originRight = (Vector2)transform.position + Vector2.right * transform.lossyScale.x / 2;
-        Vector2 originLeft = (Vector2)transform.position + Vector2.left * transform.lossyScale.x / 2;
-        if (Physics2D.BoxCast(originRight, transform.lossyScale, 0, Vector2.right, tracingWidth, ground))
+        if (Physics2D.BoxCast(transform.position, transform.lossyScale, 0, Vector2.right, tracingWidth, ground))
         {
             wallRight = true;
         }
@@ -244,7 +268,7 @@ public class Player : MonoBehaviour
         {
             wallRight = false;
         }
-        if (Physics2D.BoxCast(originLeft, transform.lossyScale, 0, Vector2.left, tracingWidth, ground))
+        if (Physics2D.BoxCast(transform.position, transform.lossyScale, 0, Vector2.left, tracingWidth, ground))
         {
             wallLeft = true;
         }
@@ -254,55 +278,8 @@ public class Player : MonoBehaviour
         }
     }
 
-    void Interact()
+    void JumpBuffer()
     {
-        foreach (var item in nearestInteractable)
-        {
-
-        }
+        jumpBuffer = false;
     }
-
-    #region Colliders & Triggers
-
-    void OnTriggerEnter2D(Collider2D collider)
-    {
-        if (!collider.gameObject.GetComponent<Chest>().HasBeenInteracted)
-        {
-            Chest _chest = collider.gameObject.GetComponent<Chest>();
-            
-            if (!_chest.HasBeenInteracted)
-                nearestInteractable.Add(_chest.gameObject);
-        }
-    }
-
-    void OnTriggerExit2D(Collider2D collider)
-    {
-        if (collider.gameObject.GetComponent<Chest>())
-        {
-            Chest _chest = collider.gameObject.GetComponent<Chest>();
-
-            if (!_chest.HasBeenInteracted)
-                nearestInteractable.Remove(_chest.gameObject);
-        }
-    }
-
-    #endregion
-
-    #region Enums
-
-    enum direction
-    {
-        none,
-        left,
-        right
-    }
-
-    enum playerState
-    {
-        Idle,
-        Moving,
-        Jumping
-    }
-
-    #endregion
 }
