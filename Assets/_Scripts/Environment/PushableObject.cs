@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Enums;
 
 public class PushableObject : MonoBehaviour
 {
@@ -104,13 +105,19 @@ public class PushableObject : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.tag != Tags.player.ToString())
+            return;
+
         player = FindObjectOfType<Player>();
         moving = true;
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (collision.tag != Tags.player.ToString())
+            return;
+
         Invoke("MovingBuffer", bufferTime);
 
     }

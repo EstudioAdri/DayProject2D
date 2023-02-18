@@ -1,4 +1,4 @@
 public static class Enums
 {
-    public enum Tags { interactable }
+    public enum Tags { player, interactable }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using static Enums;
@@ -15,6 +16,7 @@ public class Player : MonoBehaviour
     [SerializeField] float tracingWidth;
     [SerializeField] float maxAirSpeed;
     [SerializeField] float bufferTime;
+    [SerializeField] List<GameObject> nearestInteractable;
 
     public float PlayerSpeed { get { return playerSpeed; } }
     float originPositionJump;
@@ -36,26 +38,15 @@ public class Player : MonoBehaviour
     public playerState State { get { return state; } }
     Vector3 nextPositionAir;
     Vector2 jumpDirection;
-    public enum direction
-    {
-        none,
-        left,
-        right
-    }
-
-    public enum playerState
-    {
-        Idle,
-        Moving,
-        Jumping
-    }
 
     void Awake()
     {
+        gameObject.tag = Tags.player.ToString();
         goingUp = false;
         nextPositionAir = Vector3.zero;
         ground = LayerMask.GetMask("Ground");
         originPositionJump = transform.position.y;
+        nearestInteractable = new();
     }
 
 
@@ -128,6 +119,16 @@ public class Player : MonoBehaviour
             goingUp = false;
         }
 
+        if (transform.position.y >= originPositionJump)
+        {
+            nextPositionAir.y = 1 / (1 + (transform.position.y - originPositionJump));
+        }
+        else
+        {
+            nextPositionAir.y = 1;
+        }
+
+
         if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
         {
             nextPositionAir.y = 1 / ((transform.position.y - originPositionJump) * jumpVariation);
@@ -136,7 +137,7 @@ public class Player : MonoBehaviour
 
         if (!goingUp)
         {
-            nextPositionAir *= -1;
+            nextPositionAir  *= -1;
         }
 
         hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
@@ -219,7 +220,7 @@ public class Player : MonoBehaviour
             Interact();
         }
         //Reset Scene
-        if (Input.GetKey(KeyCode.R))
+        if (Input.GetKey(KeyCode.R)) //TODO: move to GameManager
         {
             Application.LoadLevel(Application.loadedLevel);
         }
@@ -269,7 +270,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    void JumpBuffer()
+    public void JumpBuffer()
     {
         jumpBuffer = false;
     }
@@ -324,7 +325,7 @@ public class Player : MonoBehaviour
     {
         if (collider.tag == Tags.interactable.ToString())
         {
-            if (collider.GetComponent<Interactable>().IsInteractable)
+            if (collider.GetComponent<Interactable>().IsInteractable && !nearestInteractable.Contains(collider.gameObject))
                 nearestInteractable.Add(collider.gameObject);
         }
     }

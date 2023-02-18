@@ -6,6 +6,7 @@ TagManager:
   tags:
   - interactable
   - platformPoint
+  - player
   layers:
   - Default
   - TransparentFX
