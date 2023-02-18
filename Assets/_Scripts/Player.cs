@@ -29,6 +29,7 @@ public class Player : MonoBehaviour
     public direction PlayerDirection { get { return playerDirection; } }
     direction playerDirection;
     playerState state;
+    public playerState State { get { return state; } }
     Vector3 nextPositionAir;
     Vector2 jumpDirection;
     public enum direction
