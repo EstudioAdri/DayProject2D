@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
+using static Enums;
+
+[RequireComponent(typeof(Health))]
 
 public class Player : MonoBehaviour
 {
@@ -44,7 +47,6 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        
         Raycasts();
         CheckInputs();
     }
@@ -64,7 +66,7 @@ public class Player : MonoBehaviour
             goingUp = true;
             grounded = false;
             jumpBuffer = false;
-            moveLock = true;            
+            moveLock = true;
         }
 
         switch (state)
@@ -111,7 +113,7 @@ public class Player : MonoBehaviour
         if (transform.position.y >= originPositionJump + maxHeight)
         {
             goingUp = false;
-        }  
+        }
 
         if (transform.position.y - originPositionJump >= maxHeight * jumpArc)
         {
@@ -129,7 +131,7 @@ public class Player : MonoBehaviour
         }
 
         hit = Physics2D.Raycast(transform.position, Vector2.down, 100f, ground);
-        
+
         hitPoint = hit.point;
 
         nextPositionAir *= jumpAcceleration;
@@ -137,15 +139,15 @@ public class Player : MonoBehaviour
         {
             nextPositionAir.y = maxFallSpeed;
         }
-        else if(nextPositionAir.y < -maxFallSpeed)
+        else if (nextPositionAir.y < -maxFallSpeed)
         {
-            nextPositionAir.y = -maxFallSpeed ;
+            nextPositionAir.y = -maxFallSpeed;
         }
 
         if (transform.position.y + nextPositionAir.y < hitPoint.y + 0.95f && !goingUp)
-        {            
+        {
             transform.position = new Vector3(transform.position.x, hitPoint.y + 0.95f);
-        }        
+        }
         else
         {
             transform.position += nextPositionAir;
@@ -202,16 +204,9 @@ public class Player : MonoBehaviour
                 moving = false;
             }
         }
-        //Checks player state
-        if (Input.GetKey(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            //print("State: " + state);
-            //print("Moving: " + moving);
-            //print("Grounded: " + grounded);
-            //print("buffer: " + jumpBuffer);
-            //print("goingUP: " + goingUp);
-            print("sppeed: " + PlayerSpeed);
-            //print("hitDistance:" + hit.distance);
+            Interact();
         }
     }
 
@@ -256,33 +251,61 @@ public class Player : MonoBehaviour
 
     void Interact()
     {
+        GameObject _interactableGameObject = FindNearestInteractable();
+
+        if (_interactableGameObject == null)
+            return;
+
+        Interactable _interactable = _interactableGameObject.GetComponent<Interactable>();
+
+        _interactable.Interact();
+
+        if (!_interactable.IsInteractable)
+            nearestInteractable.Remove(_interactableGameObject);
+    }
+
+    GameObject FindNearestInteractable()
+    {
+        if (nearestInteractable.Count <= 0)
+            return null;
+
+        Transform _nearestInteractable = null;
+
         foreach (var item in nearestInteractable)
         {
+            Vector3 _itemPosition = item.transform.position;
+            Vector3 _nearestPosition;
+            if (_nearestInteractable == null)
+                _nearestPosition = Vector3.positiveInfinity;
+            else
+                _nearestPosition = _nearestInteractable.position;
 
+            float _distanceToItem = Vector3.Distance(transform.position, _itemPosition);
+            float _distanceToNearest = Vector3.Distance(transform.position, _nearestPosition);
+
+            if (_distanceToItem < _distanceToNearest && item.GetComponent<Interactable>().IsInteractable)
+                _nearestInteractable = item.transform;
         }
+
+        return _nearestInteractable.gameObject;
     }
 
     #region Colliders & Triggers
 
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (!collider.gameObject.GetComponent<Chest>().HasBeenInteracted)
+        if (collider.tag == Tags.interactable.ToString())
         {
-            Chest _chest = collider.gameObject.GetComponent<Chest>();
-            
-            if (!_chest.HasBeenInteracted)
-                nearestInteractable.Add(_chest.gameObject);
+            if (collider.GetComponent<Interactable>().IsInteractable)
+                nearestInteractable.Add(collider.gameObject);
         }
     }
 
     void OnTriggerExit2D(Collider2D collider)
     {
-        if (collider.gameObject.GetComponent<Chest>())
+        if (collider.tag == Tags.interactable.ToString())
         {
-            Chest _chest = collider.gameObject.GetComponent<Chest>();
-
-            if (!_chest.HasBeenInteracted)
-                nearestInteractable.Remove(_chest.gameObject);
+            nearestInteractable.Remove(collider.gameObject);
         }
     }
 

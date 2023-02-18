@@ -4,22 +4,10 @@ using UnityEngine;
 
 public class Chest : MonoBehaviour
 {
-    public bool HasBeenInteracted { get
-        {
-            return isOpen;
-        }
-        set
-        {
-            animatorComponent.enabled = true;
-            isOpen = HasBeenInteracted;
-        }
-    }
-
-    bool isOpen;
-    Animator animatorComponent;
-
-    private void Start()
+    public void OpenChest()
     {
-        animatorComponent = gameObject.GetComponent<Animator>();
+        gameObject.GetComponent<Animator>().enabled = true;
+
+        print("TODO: drop item");
     }
 }

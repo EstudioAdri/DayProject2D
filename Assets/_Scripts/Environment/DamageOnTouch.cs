@@ -34,5 +34,6 @@ public class DamageOnTouch : MonoBehaviour
             return;
 
         stopRoutine = true;
+        StopAllCoroutines();
     }
 }

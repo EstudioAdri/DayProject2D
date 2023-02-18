@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 3548145347568550285}
   - component: {fileID: 794568293945586232}
+  - component: {fileID: 1658154195935838236}
+  - component: {fileID: 8390431314798170632}
   - component: {fileID: 8439117898003428271}
   m_Layer: 0
   m_Name: ChestWooden
@@ -54,6 +56,47 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1658154195935838236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3548145347568550284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8da6d9d6c75519545a2c2b1fcbe27ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactableAction:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8390431314798170632}
+        m_TargetAssemblyTypeName: Chest, Assembly-CSharp
+        m_MethodName: OpenChest
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  numberOfUses: 1
+  isInteractable: 1
+--- !u!114 &8390431314798170632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3548145347568550284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4747e43c75c862499837a8a1dd6ead0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!61 &8439117898003428271
 BoxCollider2D:
   m_ObjectHideFlags: 0
