@@ -117,14 +117,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e24105476d3d44ca28f5d7c21ae494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerSpeed: 0.2
-  maxHeight: 4.5
-  jumpAcceleration: 0.3
-  jumpVariation: 0.8
+  playerSpeed: 0.1
+  maxHeight: 3
+  jumpAcceleration: 0.6
+  jumpVariation: 2
   jumpArc: 0.8
-  tracingHeight: 0.95
-  tracingWidth: 1.2
-  maxFallSpeed: 0.8
+  tracingHeight: 0
+  tracingWidth: 0.2
+  maxAirSpeed: 0.29
+  bufferTime: 0.5
   nearestInteractable: []
 --- !u!50 &8808273591247299175
 Rigidbody2D:
