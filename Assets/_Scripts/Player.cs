@@ -3,8 +3,6 @@ using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using static Enums;
 
-[RequireComponent(typeof(Health))]
-
 public class Player : MonoBehaviour
 {
 
@@ -32,15 +30,10 @@ public class Player : MonoBehaviour
     [SerializeField] float bufferTime;
     [SerializeField] List<GameObject> nearestInteractable;
 
-
-    public float PlayerSpeed { get { return playerSpeed; } }
+   
     int ladderMove;
     float originPositionJump;    
-    bool ladder;   
-    public bool WallRight { get { return wallRight; } }
-    public bool WallLeft { get { return wallLeft; } }
-    public bool IsGrounded { get { return grounded; } }
-    float originPositionJump;
+    bool ladder;       
     bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer;
 
     LayerMask ground;

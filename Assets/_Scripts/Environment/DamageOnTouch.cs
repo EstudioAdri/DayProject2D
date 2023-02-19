@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class DamageOnTouch : MonoBehaviour
 {
-    [SerializeField] uint damage;
+    [SerializeField] public uint Damage;
     [SerializeField] float damageRepeatDelay;
 
+    
     bool stopRoutine;
 
     IEnumerator DamageRoutine(GameObject who)
@@ -14,7 +15,7 @@ public class DamageOnTouch : MonoBehaviour
         while (true)
         {
             if (stopRoutine) break;
-            who.GetComponent<Health>().Damage(damage);
+            who.GetComponent<Health>().Damage(Damage);
             yield return new WaitForSeconds(damageRepeatDelay);
         }
     }
