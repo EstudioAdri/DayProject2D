@@ -1,24 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(DamageOnTouch))]
 public class DamageOnFall : MonoBehaviour
 {
+    #region PrivateVariables
+
     bool grounded;
     uint originalDamage;
     LayerMask ground;
     DamageOnTouch damageOnTouch;
-    // Start is called before the first frame update
+
+    #endregion
+
+    #region UnityEvents
+
     void Start()
     {
-        Damage();
         ground = LayerMask.GetMask("Ground");
         damageOnTouch = GetComponent<DamageOnTouch>();
         originalDamage = damageOnTouch.Damage;
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         Vector2 originDown = (Vector2)transform.position + Vector2.down * transform.lossyScale.y / 2;
@@ -40,8 +42,5 @@ public class DamageOnFall : MonoBehaviour
         }
     }
 
-    void Damage()
-    {
-        
-    }
+    #endregion
 }

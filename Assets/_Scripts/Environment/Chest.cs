@@ -1,13 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Chest : MonoBehaviour
 {
-    public void OpenChest()
+    #region PublicMethods
+
+    public void OpenChest() // Invoked
     {
         gameObject.GetComponent<Animator>().enabled = true;
 
         print("TODO: drop item");
     }
+
+    #endregion
 }

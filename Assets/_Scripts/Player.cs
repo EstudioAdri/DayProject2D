@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 using static Enums;
 
 public class Player : MonoBehaviour
@@ -12,8 +11,8 @@ public class Player : MonoBehaviour
     public bool WallRight { get { return wallRight; } }
     public bool WallLeft { get { return wallLeft; } }
     public bool IsGrounded { get { return grounded; } }
-    public direction PlayerDirection { get { return playerDirection; } }
-    public playerState State { get { return state; } }
+    public Direction PlayerDirection { get { return playerDirection; } }
+    public PlayerState State { get { return state; } }
 
     #endregion
 
@@ -40,8 +39,8 @@ public class Player : MonoBehaviour
     Animator animator;
     LayerMask ground;
     RaycastHit2D hit;
-    direction playerDirection;
-    [SerializeField] playerState state; // TODO: remove serializefield, debugging
+    Direction playerDirection;
+    [SerializeField] PlayerState state; // TODO: remove serializefield, debugging
     Vector3 nextPositionAir;
 
     #endregion
@@ -91,67 +90,67 @@ public class Player : MonoBehaviour
 
         switch (state)
         {
-            case (playerState.Idle):
+            case (Enums.PlayerState.Idle):
                 if (!grounded)
                 {
-                    state = playerState.Jumping;
+                    state = Enums.PlayerState.Jumping;
                 }
                 else if (moving)
                 {
-                    state = playerState.Moving;
+                    state = Enums.PlayerState.Moving;
                 }
                 else if (ladder && ladderMove != 0)
                 {
-                    state = playerState.OnLadder;
+                    state = Enums.PlayerState.OnLadder;
                 }
                 break;
-            case (playerState.Jumping):
+            case (Enums.PlayerState.Jumping):
                 PlayerPhysics();
                 if (grounded & moving)
                 {
-                    state = playerState.Moving;
+                    state = Enums.PlayerState.Moving;
                 }
                 else if (grounded)
                 {
-                    state = playerState.Idle;
+                    state = Enums.PlayerState.Idle;
                 }
                 else if (ladder && ladderMove != 0)
                 {
-                    state = playerState.OnLadder;
+                    state = Enums.PlayerState.OnLadder;
                 }
                 break;
-            case (playerState.Moving):
+            case (Enums.PlayerState.Moving):
                 if (!grounded)
                 {
-                    state = playerState.Jumping;
+                    state = Enums.PlayerState.Jumping;
                 }
                 if (!moving)
                 {
-                    state = playerState.Idle;
+                    state = Enums.PlayerState.Idle;
                 }
                 else if (ladder && ladderMove != 0)
                 {
-                    state = playerState.OnLadder;
+                    state = Enums.PlayerState.OnLadder;
                 }
                 break;
-            case (playerState.OnLadder):
+            case (Enums.PlayerState.OnLadder):
                 LadderMovement();
                 if (jumpBuffer == true)
                 {
-                    state = playerState.Jumping;
+                    state = Enums.PlayerState.Jumping;
                     goingUp = true;
                     originPositionJump = transform.position.y;
                 }
                 if (ladderMove == 0)
                 {
-                    state = playerState.Idle;
+                    state = Enums.PlayerState.Idle;
                     if (moving)
                     {
-                        state = playerState.Moving;
+                        state = Enums.PlayerState.Moving;
                     }
                     if (!grounded)
                     {
-                        state = playerState.Jumping;
+                        state = Enums.PlayerState.Jumping;
                     }
                 }
                 break;
@@ -212,17 +211,17 @@ public class Player : MonoBehaviour
         }
     }
 
-    void Move(direction direction)
+    void Move(Direction direction)
     {
         if (moving)
         {
             Vector2 force = Vector2.zero;
             Vector3 movement = Vector3.zero;
-            if (direction == direction.right && !wallRight)
+            if (direction == Direction.right && !wallRight)
             {
                 force = Vector2.right;
             }
-            else if (direction == direction.left && !wallLeft)
+            else if (direction == Direction.left && !wallLeft)
             {
                 force = Vector2.left;
             }
@@ -239,16 +238,16 @@ public class Player : MonoBehaviour
 
         switch (state)
         {
-            case playerState.Idle:
+            case Enums.PlayerState.Idle:
                 animator.SetBool("idle", true);
                 break;
-            case playerState.Moving:
+            case Enums.PlayerState.Moving:
                 animator.SetBool("run", true);
                 break;
-            case playerState.Jumping:
+            case Enums.PlayerState.Jumping:
                 animator.SetBool("jump", true);
                 break;
-            case playerState.OnLadder:
+            case Enums.PlayerState.OnLadder:
                 // TODO: implement lol
                 break;
             default:
@@ -270,18 +269,18 @@ public class Player : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
             {
-                playerDirection = direction.none;
+                playerDirection = Direction.none;
                 moving = false;
             }
             else if (Input.GetKey(KeyCode.A))
             {
-                playerDirection = direction.left;
+                playerDirection = Direction.left;
                 moving = true;
                 spriteRenderer.flipX = true;
             }
             else if (Input.GetKey(KeyCode.D))
             {
-                playerDirection = direction.right;
+                playerDirection = Direction.right;
                 moving = true;
                 spriteRenderer.flipX = false;
             }
@@ -462,25 +461,6 @@ public class Player : MonoBehaviour
         }
     }
 
-
-    #endregion
-
-    #region Enums
-
-    public enum direction
-    {
-        none,
-        left,
-        right
-    }
-
-    public enum playerState
-    {
-        Idle,
-        Moving,
-        Jumping,
-        OnLadder
-    }
 
     #endregion
 }

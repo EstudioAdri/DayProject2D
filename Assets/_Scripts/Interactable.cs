@@ -1,22 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using static Enums;
 
 public class Interactable : MonoBehaviour
 {
-    public UnityEvent interactableAction;
-    public bool IsInteractable { get { return isInteractable; } }
+    #region Parameters
 
+    public bool IsInteractable { get { return isInteractable; } }
+    
+    #endregion
+    
+    #region PublicVariables
+    
+    public UnityEvent interactableAction;
+    
+    #endregion
+    
+    #region PrivateVariables
+    
     [SerializeField] uint numberOfUses;
     [SerializeField] bool isInteractable;
+
+    #endregion
+
+    #region UnityEvents
 
     private void Awake()
     {
         gameObject.tag = Tags.interactable.ToString();
-        print($"{gameObject.name} tag set to {Tags.interactable}");
     }
+
+    #endregion
+
+    #region PublicMethods
 
     public void Interact()
     {
@@ -32,4 +48,6 @@ public class Interactable : MonoBehaviour
             isInteractable = false;
         }
     }
+
+    #endregion
 }
