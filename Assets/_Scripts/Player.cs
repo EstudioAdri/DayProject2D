@@ -7,6 +7,20 @@ using static Enums;
 
 public class Player : MonoBehaviour
 {
+
+    #region Parameters
+
+    public float PlayerSpeed { get { return playerSpeed; } }
+    public bool WallRight { get { return wallRight; } }
+    public bool WallLeft { get { return wallLeft; } }
+    public bool IsGrounded { get { return grounded; } }
+    public direction PlayerDirection { get { return playerDirection; } }
+    //public playerState State { get { return state; } }
+
+    #endregion
+
+    #region PrivateVariables
+
     [SerializeField] float playerSpeed;
     [SerializeField] float maxHeight;
     [SerializeField] float jumpAcceleration;
@@ -18,28 +32,26 @@ public class Player : MonoBehaviour
     [SerializeField] float bufferTime;
     [SerializeField] List<GameObject> nearestInteractable;
 
+
     public float PlayerSpeed { get { return playerSpeed; } }
     int ladderMove;
-    float originPositionJump;
-    bool moving;
-    bool ladder;
-    bool goingUp;
-    bool grounded;
-    bool moveLock;
-    bool wallRight;
-    bool wallLeft;
+    float originPositionJump;    
+    bool ladder;   
     public bool WallRight { get { return wallRight; } }
     public bool WallLeft { get { return wallLeft; } }
     public bool IsGrounded { get { return grounded; } }
-    bool jumpBuffer;
+    float originPositionJump;
+    bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer;
+
     LayerMask ground;
     RaycastHit2D hit;
-    public direction PlayerDirection { get { return playerDirection; } }
     direction playerDirection;
     playerState state;
-    public playerState State { get { return state; } }
     Vector3 nextPositionAir;
-    Vector2 jumpDirection;
+
+    #endregion
+
+    #region UnityEvents
 
     void Awake()
     {
@@ -52,7 +64,6 @@ public class Player : MonoBehaviour
         ladderMove = 0;
     }
 
-
     void Update()
     {
         Raycasts();
@@ -64,6 +75,10 @@ public class Player : MonoBehaviour
         PlayerState();
         Move(playerDirection);
     }
+
+    #endregion
+
+    #region PrivateMethods
 
     void PlayerState()
     {
@@ -173,7 +188,7 @@ public class Player : MonoBehaviour
 
         if (!goingUp)
         {
-            nextPositionAir  *= -1;
+            nextPositionAir *= -1;
         }
 
         hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
@@ -287,7 +302,7 @@ public class Player : MonoBehaviour
         //This floor bool checks if the player is jumping, so it doesn't stop jumping when he goes under a platform
 
         bool floor = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
-        //bool floor = Physics2D.Raycast(transform.position, Vector2.down, tracingHeight, ground);
+        
         if (floor && !goingUp)
         {
             grounded = true;
@@ -321,13 +336,6 @@ public class Player : MonoBehaviour
             wallLeft = false;
         }
     }
-
-    public void JumpBuffer()
-    {
-        jumpBuffer = false;
-    }
-
-
 
     void Interact()
     {
@@ -387,6 +395,17 @@ public class Player : MonoBehaviour
         }
         transform.position += movement * playerSpeed;
     }
+
+    #endregion
+
+    #region PublicMethods
+
+    public void JumpBuffer()
+    {
+        jumpBuffer = false;
+    }
+
+    #endregion
 
     #region Colliders & Triggers
 
