@@ -19,7 +19,8 @@ public class CameraControl : MonoBehaviour
 
     void FixedUpdate()
     {
-        cameraSpeed = player.PlayerSpeed;
+        cameraSpeed = 2f;
+        //cameraSpeed = player.PlayerSpeed;
         Vector3 relativePosition = transform.InverseTransformPoint(player.transform.position);
         Vector3 cameraPosition = transform.position;
         if (relativePosition.x > cameraBoundaryX)

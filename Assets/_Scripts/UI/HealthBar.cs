@@ -20,7 +20,8 @@ public class HealthBar : MonoBehaviour
 
     private void Start()
     {
-        player = FindObjectOfType<Player>().gameObject;
+        //player = FindObjectOfType<Player>().gameObject;
+        player = FindObjectOfType<PlayerController>().gameObject;
     }
 
     void Update()
