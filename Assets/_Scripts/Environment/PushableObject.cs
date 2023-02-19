@@ -44,6 +44,10 @@ public class PushableObject : MonoBehaviour
 
     void MoveSelf()
     {
+        if (transform.position.y + 1 < player.transform.position.y)
+        {
+            return;
+        }
         Vector3 movement = Vector3.zero;
         if (ownDirection == Player.direction.right)
         {

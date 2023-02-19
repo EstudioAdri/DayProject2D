@@ -32,8 +32,17 @@ public class Player : MonoBehaviour
     [SerializeField] float bufferTime;
     [SerializeField] List<GameObject> nearestInteractable;
 
+
+    public float PlayerSpeed { get { return playerSpeed; } }
+    int ladderMove;
+    float originPositionJump;    
+    bool ladder;   
+    public bool WallRight { get { return wallRight; } }
+    public bool WallLeft { get { return wallLeft; } }
+    public bool IsGrounded { get { return grounded; } }
     float originPositionJump;
     bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer;
+
     LayerMask ground;
     RaycastHit2D hit;
     direction playerDirection;
@@ -52,6 +61,7 @@ public class Player : MonoBehaviour
         ground = LayerMask.GetMask("Ground");
         originPositionJump = transform.position.y;
         nearestInteractable = new();
+        ladderMove = 0;
     }
 
     void Update()
@@ -93,7 +103,11 @@ public class Player : MonoBehaviour
                 {
                     state = playerState.Moving;
                 }
-                break;
+                else if(ladder && ladderMove != 0)
+                {
+                    state = playerState.OnLadder;
+                }
+                    break;
             case (playerState.Jumping):
                 PlayerPhysics();
                 if (grounded & moving)
@@ -103,6 +117,10 @@ public class Player : MonoBehaviour
                 else if (grounded)
                 {
                     state = playerState.Idle;
+                }
+                else if (ladder && ladderMove != 0)
+                {
+                    state = playerState.OnLadder;
                 }
                 break;
             case (playerState.Moving):
@@ -114,7 +132,32 @@ public class Player : MonoBehaviour
                 {
                     state = playerState.Idle;
                 }
+                else if (ladder && ladderMove != 0)
+                {
+                    state = playerState.OnLadder;
+                }
                 break;
+            case (playerState.OnLadder):
+                LadderMovement();
+                if (jumpBuffer == true)
+                {
+                    state = playerState.Jumping;
+                    goingUp = true;
+                    originPositionJump = transform.position.y;
+                }
+                if (ladderMove == 0)
+                {
+                    state = playerState.Idle;
+                    if (moving)
+                    {
+                        state = playerState.Moving;
+                    }
+                    if (!grounded)
+                    {
+                        state = playerState.Jumping;
+                    }
+                }
+                    break;
         }
     }
 
@@ -232,6 +275,22 @@ public class Player : MonoBehaviour
         {
             Application.LoadLevel(Application.loadedLevel);
         }
+        if (ladder)
+        {
+            if (Input.GetKey(KeyCode.W))
+            {
+                ladderMove = 2;
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                ladderMove = 3;
+            }
+            else if(ladderMove != 0)
+            {
+                ladderMove = 1;
+            }
+
+        }
     }
 
     void Raycasts()
@@ -319,6 +378,23 @@ public class Player : MonoBehaviour
 
         return _nearestInteractable.gameObject;
     }
+    void LadderMovement()
+    {
+        Vector3 movement = new Vector3();
+        if (ladderMove < 2)
+        {
+            return;
+        }
+        else if (ladderMove == 2)
+        {
+            movement = Vector3.up;
+        }
+        else if (ladderMove == 3 && grounded == false)
+        {
+            movement = Vector3.down;
+        }
+        transform.position += movement * playerSpeed;
+    }
 
     #endregion
 
@@ -340,6 +416,12 @@ public class Player : MonoBehaviour
             if (collider.GetComponent<Interactable>().IsInteractable && !nearestInteractable.Contains(collider.gameObject))
                 nearestInteractable.Add(collider.gameObject);
         }
+
+        if (collider.tag == Tags.ladder.ToString())
+        {
+            ladder = true;
+            ladderMove = 0;
+        }
     }
 
     void OnTriggerExit2D(Collider2D collider)
@@ -348,7 +430,14 @@ public class Player : MonoBehaviour
         {
             nearestInteractable.Remove(collider.gameObject);
         }
+
+        if (collider.tag == Tags.ladder.ToString())
+        {
+            ladder = false;
+            ladderMove = 0;
+        }
     }
+
 
     #endregion
 
@@ -365,7 +454,8 @@ public class Player : MonoBehaviour
     {
         Idle,
         Moving,
-        Jumping
+        Jumping,
+        OnLadder
     }
 
     #endregion
