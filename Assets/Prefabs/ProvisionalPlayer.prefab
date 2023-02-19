@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 2886341192794049353}
   - component: {fileID: 3423468354452010323}
   - component: {fileID: 6515829413256992853}
+  - component: {fileID: 6439059332181967255}
+  - component: {fileID: 3696362216074617986}
   m_Layer: 0
   m_Name: ProvisionalPlayer
   m_TagString: Untagged
@@ -29,7 +31,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3420412382369184474}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -72.31592, y: -8, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -101,7 +103,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parent: {fileID: 0}
+  maxHealth: 6
   health: 6
+  evenMaxHealth: 0
 --- !u!114 &2886341192794049353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,13 +119,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSpeed: 0.1
-  maxHeight: 4
-  jumpAcceleration: 0.27
-  jumpVariation: 0
-  jumpArc: 0
-  tracingHeight: 0.95
-  tracingWidth: 0
-  maxFallSpeed: 0
+  maxHeight: 3
+  jumpAcceleration: 0.6
+  jumpVariation: 2
+  jumpArc: 0.8
+  tracingHeight: 0
+  tracingWidth: 0.2
+  maxAirSpeed: 0.29
+  bufferTime: 0.5
+  nearestInteractable: []
+  state: 0
 --- !u!50 &3423468354452010323
 Rigidbody2D:
   serializedVersion: 4
@@ -169,3 +176,39 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.1, y: 1.88}
   m_EdgeRadius: 0
+--- !u!58 &6439059332181967255
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3420412382369184474}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 1
+--- !u!95 &3696362216074617986
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3420412382369184474}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e5aca378b30cd444b86546ed59a8fe4f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

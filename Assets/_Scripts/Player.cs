@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     public bool WallLeft { get { return wallLeft; } }
     public bool IsGrounded { get { return grounded; } }
     public direction PlayerDirection { get { return playerDirection; } }
-    //public playerState State { get { return state; } }
+    public playerState State { get { return state; } }
 
     #endregion
 
@@ -33,20 +33,17 @@ public class Player : MonoBehaviour
     [SerializeField] List<GameObject> nearestInteractable;
 
 
-    public float PlayerSpeed { get { return playerSpeed; } }
     int ladderMove;
-    float originPositionJump;    
-    bool ladder;   
-    public bool WallRight { get { return wallRight; } }
-    public bool WallLeft { get { return wallLeft; } }
-    public bool IsGrounded { get { return grounded; } }
     float originPositionJump;
+    bool ladder;
     bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer;
 
+    SpriteRenderer spriteRenderer;
+    Animator animator;
     LayerMask ground;
     RaycastHit2D hit;
     direction playerDirection;
-    playerState state;
+    [SerializeField] playerState state; // TODO: remove serializefield, debugging
     Vector3 nextPositionAir;
 
     #endregion
@@ -55,8 +52,9 @@ public class Player : MonoBehaviour
 
     void Awake()
     {
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         gameObject.tag = Tags.player.ToString();
-        goingUp = false;
         nextPositionAir = Vector3.zero;
         ground = LayerMask.GetMask("Ground");
         originPositionJump = transform.position.y;
@@ -74,6 +72,7 @@ public class Player : MonoBehaviour
     {
         PlayerState();
         Move(playerDirection);
+        SetPlayerAnimation();
     }
 
     #endregion
@@ -103,11 +102,11 @@ public class Player : MonoBehaviour
                 {
                     state = playerState.Moving;
                 }
-                else if(ladder && ladderMove != 0)
+                else if (ladder && ladderMove != 0)
                 {
                     state = playerState.OnLadder;
                 }
-                    break;
+                break;
             case (playerState.Jumping):
                 PlayerPhysics();
                 if (grounded & moving)
@@ -157,7 +156,7 @@ public class Player : MonoBehaviour
                         state = playerState.Jumping;
                     }
                 }
-                    break;
+                break;
         }
     }
 
@@ -234,6 +233,31 @@ public class Player : MonoBehaviour
         }
     }
 
+    void SetPlayerAnimation()
+    {
+        animator.SetBool("idle", false);
+        animator.SetBool("run", false);
+        animator.SetBool("jump", false);
+
+        switch (state)
+        {
+            case playerState.Idle:
+                animator.SetBool("idle", true);
+                break;
+            case playerState.Moving:
+                animator.SetBool("run", true);
+                break;
+            case playerState.Jumping:
+                animator.SetBool("jump", true);
+                break;
+            case playerState.OnLadder:
+                // TODO: implement lol
+                break;
+            default:
+                break;
+        }
+    }
+
     void CheckInputs()
     {
         //Checks how player is using the jump button
@@ -255,11 +279,13 @@ public class Player : MonoBehaviour
             {
                 playerDirection = direction.left;
                 moving = true;
+                spriteRenderer.flipX = true;
             }
             else if (Input.GetKey(KeyCode.D))
             {
                 playerDirection = direction.right;
                 moving = true;
+                spriteRenderer.flipX = false;
             }
             else
             {
@@ -285,7 +311,7 @@ public class Player : MonoBehaviour
             {
                 ladderMove = 3;
             }
-            else if(ladderMove != 0)
+            else if (ladderMove != 0)
             {
                 ladderMove = 1;
             }
@@ -302,7 +328,7 @@ public class Player : MonoBehaviour
         //This floor bool checks if the player is jumping, so it doesn't stop jumping when he goes under a platform
 
         bool floor = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
-        
+
         if (floor && !goingUp)
         {
             grounded = true;
