@@ -1,14 +1,18 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DamageOnTouch : MonoBehaviour
 {
+    #region PrivateVariables
+
     [SerializeField] public uint Damage;
     [SerializeField] float damageRepeatDelay;
 
-    
     bool stopRoutine;
+
+    #endregion
+
+    #region Enumerators
 
     IEnumerator DamageRoutine(GameObject who)
     {
@@ -19,6 +23,10 @@ public class DamageOnTouch : MonoBehaviour
             yield return new WaitForSeconds(damageRepeatDelay);
         }
     }
+
+    #endregion
+
+    #region Colliders & Triggers
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -37,4 +45,6 @@ public class DamageOnTouch : MonoBehaviour
         stopRoutine = true;
         StopAllCoroutines();
     }
+
+    #endregion
 }

@@ -1,97 +1,104 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using static Enums;
+
 [RequireComponent(typeof(Health))]
+
 public class BreakOnTouch : MonoBehaviour
 {
-    [SerializeField] bool damageOnLand;
-    [SerializeField] bool damageOnLeave;
-    [SerializeField] float damageTimer;
-    bool playerTouched;
-    bool damageCD;
-    platformState state;
-    Health health;
-    Player player;
+    #region PrivateVariables
 
-    enum platformState
-    {
-        Idle,
-        PlayerOnIt,
-        PlayerOffIt
-    }
+    [SerializeField] bool damageOnLand, damageOnLeave;
+    [SerializeField] float damageTimer;
+
+    bool playerTouched, damageCD;
+    PlatformState state;
+    Health healthComponent;
+    Player playerComponent;
+
+    #endregion
+
+    #region UnityEvents
 
     void Awake()
     {
-        health = GetComponent<Health>();
-        player = FindObjectOfType<Player>();
-        state = platformState.Idle;
+        healthComponent = GetComponent<Health>();
+        playerComponent = FindObjectOfType<Player>();
+        state = PlatformState.Idle;
     }
 
     private void FixedUpdate()
     {
         if (playerTouched)
         {
-            if (player.transform.position.y > transform.position.y)
+            if (playerComponent.transform.position.y > transform.position.y)
             {
                 CheckDamage();
             }
         }
     }
 
+    #endregion
+
+    #region Colliders & Triggers
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        playerTouched = true;    
+        playerTouched = true;
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        playerTouched = false;        
+        playerTouched = false;
     }
 
+    #endregion
+
+    #region PrivateMethods
 
     void CheckDamage()
     {
-        if (playerTouched)
+        if (!playerTouched)
+            return;
+
+        switch (state)
         {
-            switch(state)
-            {
-                case platformState.Idle:
-                    if (player.IsGrounded)
-                    {
-                        state = platformState.PlayerOnIt;
-                    }
-                    break;
-                case platformState.PlayerOnIt:
-                    if(damageOnLand && !damageCD) 
-                    {
-                        Invoke("DamageSelf", damageTimer);
-                        damageCD = true;
-                    }
-                    if (!player.IsGrounded)
-                    {
-                        state = platformState.PlayerOffIt;
-                        damageCD = false;
-                    }
-                    break;
-                case platformState.PlayerOffIt:
-                    if (damageOnLeave && !damageCD)
-                    {
-                        Invoke("DamageSelf", damageTimer);
-                        damageCD = true;
-                        state = platformState.Idle;
-                    }
-                    else
-                    {
-                        state = platformState.Idle;
-                    }
-                        break;
-            }
+            case PlatformState.Idle:
+                if (playerComponent.IsGrounded)
+                {
+                    state = PlatformState.PlayerOnIt;
+                }
+                break;
+            case PlatformState.PlayerOnIt:
+                if (damageOnLand && !damageCD)
+                {
+                    Invoke("DamageSelf", damageTimer);
+                    damageCD = true;
+                }
+                if (!playerComponent.IsGrounded)
+                {
+                    state = PlatformState.PlayerOffIt;
+                    damageCD = false;
+                }
+                break;
+            case PlatformState.PlayerOffIt:
+                if (damageOnLeave && !damageCD)
+                {
+                    Invoke("DamageSelf", damageTimer);
+                    damageCD = true;
+                    state = PlatformState.Idle;
+                }
+                else
+                {
+                    state = PlatformState.Idle;
+                }
+                break;
         }
     }
 
-    void DamageSelf()
+    void DamageSelf() // Invoked
     {
-        health.Damage(1);
+        healthComponent.Damage(1);
     }
+
+    #endregion
 }

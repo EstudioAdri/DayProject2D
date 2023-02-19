@@ -1,30 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static Enums;
 
 public class PushableObject : MonoBehaviour
 {
+    #region PrivateVariables
+
     [SerializeField] float tracingWidth;
     [SerializeField] float margin = 2;
     [SerializeField] float checkBuffer = 0.5f;
-    float bufferTime = 0.017f;
-    Player player;
-    Player.direction ownDirection;
-    bool moving;
-    bool playerCheck;
-    bool selfCheck;
     [SerializeField] bool wallRight;
     [SerializeField] bool wallLeft;
-    LayerMask ground;
-    // Start is called before the first frame update
+
+    float bufferTime = 0.017f;
+    bool moving, playerCheck, selfCheck;
+    Player player;
+    Direction ownDirection;
+    LayerMask groundLayer;
+
+    #endregion
+
+    #region UnityEvents
+
     void Start()
     {
-        ground = LayerMask.GetMask("Ground");
+        groundLayer = LayerMask.GetMask("Ground");
     }
 
-
-    // Update is called once per frame
     void FixedUpdate()
     {
         Walls();
@@ -42,6 +43,10 @@ public class PushableObject : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region PrivateMethods
+
     void MoveSelf()
     {
         if (transform.position.y + 1 < player.transform.position.y)
@@ -49,16 +54,16 @@ public class PushableObject : MonoBehaviour
             return;
         }
         Vector3 movement = Vector3.zero;
-        if (ownDirection == Player.direction.right)
+        if (ownDirection == Direction.right)
         {
             movement = Vector3.right;
         }
-        else if (ownDirection == Player.direction.left)
+        else if (ownDirection == Direction.left)
         {
             movement = Vector3.left;
         }
         transform.position += movement * player.PlayerSpeed;
-        if (player.PlayerDirection != ownDirection || ownDirection == Player.direction.right && !player.WallRight || ownDirection == Player.direction.left && !player.WallLeft)
+        if (player.PlayerDirection != ownDirection || ownDirection == Direction.right && !player.WallRight || ownDirection == Direction.left && !player.WallLeft)
         {
             Invoke("CheckBuffer", checkBuffer);
         }
@@ -67,16 +72,14 @@ public class PushableObject : MonoBehaviour
     void CheckDirection()
     {
         bool check;
-        Vector2 position = transform.position;
-        Vector3 force = Vector3.zero;
-        if (player.WallLeft && transform.position.x < player.transform.position.x && player.PlayerDirection == Player.direction.left && !wallLeft)
+        if (player.WallLeft && transform.position.x < player.transform.position.x && player.PlayerDirection == Direction.left && !wallLeft)
         {
-            ownDirection = Player.direction.left;
+            ownDirection = Direction.left;
             check = true;
         }
-        else if (player.WallRight && transform.position.x > player.transform.position.x && player.PlayerDirection == Player.direction.right && !wallRight)
+        else if (player.WallRight && transform.position.x > player.transform.position.x && player.PlayerDirection == Direction.right && !wallRight)
         {
-            ownDirection = Player.direction.right;
+            ownDirection = Direction.right;
             check = true;
         }
         else
@@ -87,11 +90,10 @@ public class PushableObject : MonoBehaviour
         playerCheck = check;
     }
 
-
     void Walls()
     {
         Vector2 origin = new Vector2(transform.position.x, transform.position.y + margin);
-        if (Physics2D.BoxCast(origin, transform.lossyScale, 0, Vector2.right, tracingWidth, ground))
+        if (Physics2D.BoxCast(origin, transform.lossyScale, 0, Vector2.right, tracingWidth, groundLayer))
         {
             wallRight = true;
         }
@@ -99,7 +101,7 @@ public class PushableObject : MonoBehaviour
         {
             wallRight = false;
         }
-        if (Physics2D.BoxCast(origin, transform.lossyScale, 0, Vector2.left, tracingWidth, ground))
+        if (Physics2D.BoxCast(origin, transform.lossyScale, 0, Vector2.left, tracingWidth, groundLayer))
         {
             wallLeft = true;
         }
@@ -109,6 +111,21 @@ public class PushableObject : MonoBehaviour
         }
     }
 
+    void MovingBuffer() // Invoked
+    {
+        moving = false;
+        player = null;
+    }
+
+    void CheckBuffer() // Invoked
+    {
+        selfCheck = false;
+    }
+
+    #endregion
+
+    #region Colliders & Triggers
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag != Tags.player.ToString())
@@ -117,23 +134,15 @@ public class PushableObject : MonoBehaviour
         player = FindObjectOfType<Player>();
         moving = true;
     }
+
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.tag != Tags.player.ToString())
             return;
 
         Invoke("MovingBuffer", bufferTime);
-
-    }
-    void MovingBuffer()
-    {
-        moving = false;
-        player = null;
     }
 
-    void CheckBuffer()
-    {
-        selfCheck = false;
-    }
+    #endregion
 }
 
