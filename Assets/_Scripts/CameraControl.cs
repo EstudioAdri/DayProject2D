@@ -14,9 +14,10 @@ public class CameraControl : MonoBehaviour
 
     #region UnityEvents
 
-    private void Awake()
+    private void Start()
     {
         player = FindObjectOfType<Player>();
+        transform.position = new Vector3(player.transform.position.x, player.transform.position.y, -10);
     }
 
     void FixedUpdate()

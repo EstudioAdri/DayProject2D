@@ -18,8 +18,7 @@ public class Player : MonoBehaviour
 
     #region PrivateVariables
 
-    [SerializeField] uint wallJumpsNumber;
-    [SerializeField] uint wallKicksNumber;
+    [SerializeField] int wallJumpsNumber;    
     [SerializeField] float playerSpeed;
     [SerializeField] float maxHeight;
     [SerializeField] float jumpAcceleration;
@@ -29,24 +28,28 @@ public class Player : MonoBehaviour
     [SerializeField] float tracingWidth;
     [SerializeField] float maxAirSpeed;
     [SerializeField] float bufferTime;
+    [SerializeField] float feetSize;
+    [SerializeField] float platformLeap;
     [SerializeField] List<GameObject> nearestInteractable;
 
 
     uint ladderMove;
-    uint wallJumps;
-    uint wallKicks;
+    int wallJumps;    
     float originPositionJump;
     bool ladder;
-    bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer, wallJumpBuffer;
+    bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer, wallJumpBuffer, down, touchingGround, touchingPlatform, fallingPlatform;
 
     SpriteRenderer spriteRenderer;
     Animator animator;
     LayerMask ground;
+    LayerMask platform;
+    LayerMask[] layers;
     RaycastHit2D hit;
+    [SerializeField] Direction previousDirection;
     [SerializeField] Direction playerDirection;
     [SerializeField] PlayerState state; // TODO: remove serializefield, debugging
     Vector3 nextPositionAir;
-    Vector3 previousDirection;
+    Vector3 momentum;
 
     #endregion
 
@@ -59,17 +62,20 @@ public class Player : MonoBehaviour
         gameObject.tag = Tags.player.ToString();
         nextPositionAir = Vector3.zero;
         ground = LayerMask.GetMask("Ground");
+        platform = LayerMask.GetMask("Platform");
+        layers = new LayerMask[2] { ground, platform };
         originPositionJump = transform.position.y;
         nearestInteractable = new();
         ladderMove = 0;
-        wallJumps = wallJumpsNumber;
-        wallKicks = wallKicksNumber;
+        wallJumps = wallJumpsNumber;        
+        playerDirection = Direction.none;
+        previousDirection = Direction.none;
     }
 
     void Update()
     {
         Raycasts();
-        CheckInputs();
+        CheckInputs();        
     }
 
     void FixedUpdate()
@@ -81,6 +87,8 @@ public class Player : MonoBehaviour
         {
             WallJump();
         }
+        print(state);
+        
     }
 
     #endregion
@@ -93,9 +101,17 @@ public class Player : MonoBehaviour
         if (jumpBuffer && grounded)
         {
             originPositionJump = transform.position.y;
-            goingUp = true;
             grounded = false;
-            jumpBuffer = false;            
+            jumpBuffer = false; 
+            goingUp = true;
+            momentum = CheckDirection(playerDirection);
+            
+            if (touchingPlatform && down)
+            {
+                goingUp = false;
+                fallingPlatform = true;
+                Invoke("FallingPlatform", platformLeap);
+            }
         }
 
         switch (state)
@@ -104,6 +120,10 @@ public class Player : MonoBehaviour
                 if (!grounded)
                 {
                     state = Enums.PlayerState.Jumping;
+                    if (down && !goingUp)
+                    {
+                        momentum = Vector3.down;
+                    }
                 }
                 else if (moving)
                 {
@@ -116,7 +136,7 @@ public class Player : MonoBehaviour
                 break;
             case (Enums.PlayerState.Jumping):
                 PlayerPhysics();
-                if (grounded & moving)
+                if (grounded && moving)
                 {
                     state = Enums.PlayerState.Moving;
                 }
@@ -133,6 +153,10 @@ public class Player : MonoBehaviour
                 if (!grounded)
                 {
                     state = Enums.PlayerState.Jumping;
+                    if (down && !goingUp)
+                    {
+                        momentum = Vector3.down;
+                    }
                 }
                 if (!moving)
                 {
@@ -195,9 +219,15 @@ public class Player : MonoBehaviour
         if (!goingUp)
         {
             nextPositionAir *= -1;
-        }
+        }      
 
+        
         hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
+        
+        if (Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, platform) && !fallingPlatform)
+        {
+            hit = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, platform);
+        }
 
         hitPoint = hit.point;
 
@@ -225,78 +255,128 @@ public class Player : MonoBehaviour
     {
         if (state == Enums.PlayerState.Jumping)
         {
-            if (!WallRight && previousDirection.x > 0 || !WallLeft && previousDirection.x < 0)
+            if (!WallRight && momentum.x > 0 || !WallLeft && momentum.x < 0)
             {
-                transform.position += previousDirection * playerSpeed;   
+                transform.position += momentum * playerSpeed;   
             }
         }
         else if (moving && !moveLock)
-        {
-            Vector2 force = Vector2.zero;
-            Vector3 movement = Vector3.zero;
-            if (direction == Direction.right && !wallRight)
-            {
-                force = Vector2.right;
-            }
-            else if (direction == Direction.left && !wallLeft)
-            {
-                force = Vector2.left;
-            }            
-                movement.x = force.x;
+        {            
+            Vector3 movement = CheckDirection(direction);                  
+            
             transform.position += movement * playerSpeed;
-            previousDirection = movement;
+            momentum = movement;
+        }
+        else
+        {            
+            momentum = Vector3.zero;                      
+        }
+    }
+
+    Vector3 CheckDirection(Direction direction)
+    {
+        Vector3 movement;
+        if (direction == Direction.right && !wallRight)
+        {
+            movement = Vector3.right;
+        }
+        else if (direction == Direction.left && !wallLeft)
+        {
+            movement = Vector3.left;
         }
         else
         {
-            previousDirection = Vector3.zero;
+            movement = Vector3.zero;            
         }
-
+        return movement;
     }
+
     void WallJump()
     {
         if (wallJumpBuffer == true && wallJumpsNumber > 0)
         {
-            if (wallRight && playerDirection == Direction.right)
+            if (playerDirection != Direction.none) 
             {
-                originPositionJump = transform.position.y;
-                goingUp = true;
-                wallJumpsNumber--;
-                jumpBuffer = false;
-                wallJumpBuffer = false;
-                previousDirection = Vector3.right;
+                if (wallRight && playerDirection == Direction.right)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.right;
+                }
+                else if (wallLeft && playerDirection == Direction.left)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.left;
+                }  
+                else if (wallRight && playerDirection == Direction.left)
+                {
+                    originPositionJump = transform.position.y;
+                    momentum.x *= -1;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.left;
+                }
+                else if (wallLeft && playerDirection == Direction.right)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.right;
+                }
             }
-            else if (wallLeft && playerDirection == Direction.left)
+            else
             {
-                originPositionJump = transform.position.y;
-                goingUp = true;
-                wallJumpsNumber--;
-                jumpBuffer = false;
-                wallJumpBuffer = false;
-                previousDirection = Vector3.left;
+                if (wallRight && previousDirection == Direction.right)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.right;
+                }
+                else if (wallLeft && previousDirection == Direction.left)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.left;
+                }
+                else if (wallRight && previousDirection == Direction.left)
+                {
+                    originPositionJump = transform.position.y;
+                    momentum.x *= -1;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.left;
+                }
+                else if (wallLeft && previousDirection == Direction.right)
+                {
+                    originPositionJump = transform.position.y;
+                    goingUp = true;
+                    wallJumpsNumber--;
+                    jumpBuffer = false;
+                    wallJumpBuffer = false;
+                    momentum = Vector3.right;
+                }
             }
         }
-        if (wallJumpBuffer == true && wallKicksNumber > 0)
-        {
-            if (wallRight && playerDirection == Direction.left)
-            {
-                originPositionJump = transform.position.y;
-                previousDirection.x *= -1;
-                goingUp = true;
-                wallKicksNumber--;
-                jumpBuffer = false;
-                wallJumpBuffer = false;
-                previousDirection = Vector3.left;
-            }
-            else if (wallLeft && playerDirection == Direction.right)
-            {
-                originPositionJump = transform.position.y;
-                goingUp = true;
-                wallJumpsNumber--;
-                jumpBuffer = false;
-                wallJumpBuffer = false;
-                previousDirection = Vector3.right;
-            }
-        }
+        
     }
 
     void SetPlayerAnimation()
@@ -340,24 +420,50 @@ public class Player : MonoBehaviour
 
         if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
         {
+            if (previousDirection != Direction.none && playerDirection != Direction.none)
+            {
+                previousDirection = playerDirection;
+            }
             playerDirection = Direction.none;
             moving = false;
         }
         else if (Input.GetKey(KeyCode.A))
         {
+            if (playerDirection != Direction.left)
+            {
+                previousDirection = playerDirection;
+            }
             playerDirection = Direction.left;
             moving = true;
             spriteRenderer.flipX = true;
         }
         else if (Input.GetKey(KeyCode.D))
         {
+            if (playerDirection != Direction.right)
+            {
+                previousDirection = playerDirection;
+            }
             playerDirection = Direction.right;
             moving = true;
             spriteRenderer.flipX = false;
         }
         else
         {
-            moving = false;
+            if (playerDirection != Direction.none)
+            {
+                previousDirection = playerDirection;
+            }
+            playerDirection = Direction.none;
+            moving = false;            
+        }
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            down = true;
+        }
+        else
+        {
+            down = false;
         }
 
         if (Input.GetKeyDown(KeyCode.E))
@@ -389,18 +495,33 @@ public class Player : MonoBehaviour
 
     void Raycasts()
     {
+        bool floor = false;
         Vector2 originUp = (Vector2)transform.position + Vector2.up * transform.lossyScale.y / 2;
         Vector2 originDown = (Vector2)transform.position + Vector2.down * transform.lossyScale.y / 2;
         Vector2 originRight = (Vector2)transform.position + Vector2.right * transform.lossyScale.x / 2;
         Vector2 originLeft = (Vector2)transform.position + Vector2.left * transform.lossyScale.x / 2;
         //This floor bool checks if the player is jumping, so it doesn't stop jumping when he goes under a platform
 
-        bool floor = Physics2D.BoxCast(originDown, transform.lossyScale, 0, Vector2.down, tracingHeight, ground);
+        if (Physics2D.BoxCast(originDown, new Vector3(feetSize, 1, 1), 0, Vector2.down, tracingHeight, ground))
+        {
+            floor = true;
+            touchingGround = true;
+        }
+        else if (Physics2D.BoxCast(originDown, new Vector3(feetSize, 1, 1), 0, Vector2.down, tracingHeight, platform) && !fallingPlatform)
+        {
+            floor = true;
+            touchingPlatform = true;
+        }
+        else
+        {
+            floor = false;
+            touchingGround = false;
+            touchingPlatform = false;
+        }
 
         if (floor && !goingUp)
         {
-            grounded = true;
-            wallKicksNumber = wallKicks;
+            grounded = true;            
             wallJumpsNumber = wallJumps;
             moveLock = false;
         }
@@ -500,6 +621,10 @@ public class Player : MonoBehaviour
     {
         jumpBuffer = false;
         wallJumpBuffer = false;
+    }
+    void FallingPlatform()
+    {
+        fallingPlatform = false;
     }
 
     #endregion

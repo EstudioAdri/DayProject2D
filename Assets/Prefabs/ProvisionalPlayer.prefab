@@ -118,6 +118,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e24105476d3d44ca28f5d7c21ae494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wallJumpsNumber: 0
+  wallKicksNumber: 0
   playerSpeed: 0.1
   maxHeight: 3
   jumpAcceleration: 0.6
@@ -126,8 +128,11 @@ MonoBehaviour:
   tracingHeight: 0
   tracingWidth: 0.2
   maxAirSpeed: 0.29
-  bufferTime: 0.5
+  bufferTime: 0.15
+  feetSize: 0
+  platformLeap: 0.1
   nearestInteractable: []
+  playerDirection: 0
   state: 0
 --- !u!50 &3423468354452010323
 Rigidbody2D:
