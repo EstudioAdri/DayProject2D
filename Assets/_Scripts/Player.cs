@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
 
     #region PrivateVariables
 
+    [SerializeField] uint wallJumpsNumber;
+    [SerializeField] uint wallKicksNumber;
     [SerializeField] float playerSpeed;
     [SerializeField] float maxHeight;
     [SerializeField] float jumpAcceleration;
@@ -30,18 +32,21 @@ public class Player : MonoBehaviour
     [SerializeField] List<GameObject> nearestInteractable;
 
 
-    int ladderMove;
+    uint ladderMove;
+    uint wallJumps;
+    uint wallKicks;
     float originPositionJump;
     bool ladder;
-    bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer;
+    bool moving, goingUp, grounded, moveLock, wallRight, wallLeft, jumpBuffer, wallJumpBuffer;
 
     SpriteRenderer spriteRenderer;
     Animator animator;
     LayerMask ground;
     RaycastHit2D hit;
-    Direction playerDirection;
+    [SerializeField] Direction playerDirection;
     [SerializeField] PlayerState state; // TODO: remove serializefield, debugging
     Vector3 nextPositionAir;
+    Vector3 previousDirection;
 
     #endregion
 
@@ -57,6 +62,8 @@ public class Player : MonoBehaviour
         originPositionJump = transform.position.y;
         nearestInteractable = new();
         ladderMove = 0;
+        wallJumps = wallJumpsNumber;
+        wallKicks = wallKicksNumber;
     }
 
     void Update()
@@ -70,6 +77,10 @@ public class Player : MonoBehaviour
         PlayerState();
         Move(playerDirection);
         SetPlayerAnimation();
+        if (state == Enums.PlayerState.Jumping)
+        {
+            WallJump();
+        }
     }
 
     #endregion
@@ -84,8 +95,7 @@ public class Player : MonoBehaviour
             originPositionJump = transform.position.y;
             goingUp = true;
             grounded = false;
-            jumpBuffer = false;
-            moveLock = true;
+            jumpBuffer = false;            
         }
 
         switch (state)
@@ -208,12 +218,19 @@ public class Player : MonoBehaviour
         else
         {
             transform.position += nextPositionAir;
-        }
+        }        
     }
 
     void Move(Direction direction)
     {
-        if (moving)
+        if (state == Enums.PlayerState.Jumping)
+        {
+            if (!WallRight && previousDirection.x > 0 || !WallLeft && previousDirection.x < 0)
+            {
+                transform.position += previousDirection * playerSpeed;   
+            }
+        }
+        else if (moving && !moveLock)
         {
             Vector2 force = Vector2.zero;
             Vector3 movement = Vector3.zero;
@@ -224,9 +241,61 @@ public class Player : MonoBehaviour
             else if (direction == Direction.left && !wallLeft)
             {
                 force = Vector2.left;
-            }
-            movement.x = force.x;
+            }            
+                movement.x = force.x;
             transform.position += movement * playerSpeed;
+            previousDirection = movement;
+        }
+        else
+        {
+            previousDirection = Vector3.zero;
+        }
+
+    }
+    void WallJump()
+    {
+        if (wallJumpBuffer == true && wallJumpsNumber > 0)
+        {
+            if (wallRight && playerDirection == Direction.right)
+            {
+                originPositionJump = transform.position.y;
+                goingUp = true;
+                wallJumpsNumber--;
+                jumpBuffer = false;
+                wallJumpBuffer = false;
+                previousDirection = Vector3.right;
+            }
+            else if (wallLeft && playerDirection == Direction.left)
+            {
+                originPositionJump = transform.position.y;
+                goingUp = true;
+                wallJumpsNumber--;
+                jumpBuffer = false;
+                wallJumpBuffer = false;
+                previousDirection = Vector3.left;
+            }
+        }
+        if (wallJumpBuffer == true && wallKicksNumber > 0)
+        {
+            if (wallRight && playerDirection == Direction.left)
+            {
+                originPositionJump = transform.position.y;
+                previousDirection.x *= -1;
+                goingUp = true;
+                wallKicksNumber--;
+                jumpBuffer = false;
+                wallJumpBuffer = false;
+                previousDirection = Vector3.left;
+            }
+            else if (wallLeft && playerDirection == Direction.right)
+            {
+                originPositionJump = transform.position.y;
+                goingUp = true;
+                wallJumpsNumber--;
+                jumpBuffer = false;
+                wallJumpBuffer = false;
+                previousDirection = Vector3.right;
+            }
         }
     }
 
@@ -257,38 +326,40 @@ public class Player : MonoBehaviour
 
     void CheckInputs()
     {
-        //Checks how player is using the jump button
-        //Features Incoming
+        //Checks how player is using the jump button        
         if (Input.GetKeyDown(KeyCode.Space))
-        {
+        {            
             jumpBuffer = true;
+            if (!grounded)
+            {
+                wallJumpBuffer = true;
+            }
             Invoke("JumpBuffer", bufferTime);
         }
         //Checks if player moves left or right
-        if (!moveLock)
+
+        if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
         {
-            if (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D))
-            {
-                playerDirection = Direction.none;
-                moving = false;
-            }
-            else if (Input.GetKey(KeyCode.A))
-            {
-                playerDirection = Direction.left;
-                moving = true;
-                spriteRenderer.flipX = true;
-            }
-            else if (Input.GetKey(KeyCode.D))
-            {
-                playerDirection = Direction.right;
-                moving = true;
-                spriteRenderer.flipX = false;
-            }
-            else
-            {
-                moving = false;
-            }
+            playerDirection = Direction.none;
+            moving = false;
         }
+        else if (Input.GetKey(KeyCode.A))
+        {
+            playerDirection = Direction.left;
+            moving = true;
+            spriteRenderer.flipX = true;
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            playerDirection = Direction.right;
+            moving = true;
+            spriteRenderer.flipX = false;
+        }
+        else
+        {
+            moving = false;
+        }
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
@@ -329,6 +400,8 @@ public class Player : MonoBehaviour
         if (floor && !goingUp)
         {
             grounded = true;
+            wallKicksNumber = wallKicks;
+            wallJumpsNumber = wallJumps;
             moveLock = false;
         }
         else
@@ -426,6 +499,7 @@ public class Player : MonoBehaviour
     public void JumpBuffer()
     {
         jumpBuffer = false;
+        wallJumpBuffer = false;
     }
 
     #endregion
